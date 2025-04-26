@@ -1,12 +1,22 @@
 import os
 import shutil
 from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.routes import session
 
 load_dotenv()
 
 app = FastAPI()
+
+# Add CORS middleware to allow requests from the frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Allow requests from the frontend
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 app.include_router(session.router, prefix="/session")
 

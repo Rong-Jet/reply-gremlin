@@ -17,6 +17,8 @@ async def get_session():
     if not api_key:
         return Response(content='{"error": "OPENAI_API_KEY not set"}', status_code=500, media_type="application/json")
     try:
+        # This endpoint is now correctly forwarding the OpenAI realtime session token
+        # that the frontend needs for the RTCPeerConnection
         async with httpx.AsyncClient() as client:
             r = await client.post(
                 "https://api.openai.com/v1/realtime/sessions",
