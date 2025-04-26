@@ -1,0 +1,1 @@
+"""Gmail MCP integration with OpenAI Agents.""" 
