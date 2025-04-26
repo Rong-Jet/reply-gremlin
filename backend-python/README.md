@@ -29,21 +29,19 @@ This is a Python FastAPI backend that provides a WebSocket endpoint for the Gmai
 
 ## Run the server
 
-Single command to create virtual environment, install dependencies, and start the server:
+Start the FastAPI server:
 
 ```sh
-uv run uvicorn app.gmail_server:app --reload
+uv run uvicorn app.main:app
 ```
 
-This will:
-- Create and activate a virtual environment if it doesn't exist
-- Install all required packages
-- Start the FastAPI server with hot reload
+**Important Note:** If you encounter a `NotImplementedError` from asyncio (common on Windows with Python 3.12), do not use the `--reload` flag. The error occurs because of asyncio subprocess limitations in Python 3.12 on Windows. Running without `--reload` resolves this issue.
 
 ## Endpoints
 
-- `WebSocket /ws/gmail` — WebSocket endpoint for Gmail MCP server communication
+- `GET /session/get-mails` — Fetch and summarize recent emails
+- `GET /session` — Get OpenAI session information
 
 ---
 
-**Note:** This project uses FastAPI with WebSocket support for real-time communication with the Gmail MCP server. 
+**Note:** This project uses FastAPI for real-time communication with the Gmail MCP server. 

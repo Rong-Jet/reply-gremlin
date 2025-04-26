@@ -6,7 +6,7 @@ import sys
 import warnings
 
 from agents import Agent, Runner, gen_trace_id, trace
-from agents.mcp.server import MCPServer, MCPServerStdio
+from agents.mcp import MCPServer, MCPServerStdio
 
 
 # Suppress the specific Windows asyncio warnings about closed pipes
@@ -21,6 +21,17 @@ async def run(mcp_server: MCPServer):
         instructions="You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account.",
         mcp_servers=[mcp_server],
     )
+
+    # Get unread emails with summaries
+    message = "Get all unread emails and generate a summary for each one. Return the results as JSON including both the email data and summaries."
+    print("\n" + "-" * 40)
+    print(f"Running: {message}")
+    result = await Runner.run(
+        starting_agent=agent,
+        input=message
+    )
+    print(result.final_output)
+    # TODO: Debug or output what the agent is doing (tool calls, etc.)
 
     # List available tools
     message = "What tools are available for Gmail? Please list them."

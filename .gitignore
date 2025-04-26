@@ -54,3 +54,5 @@ poetry.lock
 
 # OS
 Thumbs.db
+
+.vscode/
