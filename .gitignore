@@ -40,3 +40,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.env
+*.venv
+Pipfile.lock
+poetry.lock
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db
