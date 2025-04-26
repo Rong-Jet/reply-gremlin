@@ -33,6 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+gmail_mcp/gcp-oauth.keys.json
 
 # vercel
 .vercel
@@ -40,3 +41,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.env
+*.venv
+Pipfile.lock
+poetry.lock
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db
+
+.vscode/
