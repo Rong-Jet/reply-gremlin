@@ -2,14 +2,15 @@ import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
 // Authentication constants
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/gmail.modify',
 ];
-const TOKEN_PATH = path.join(process.cwd(), 'gmail-token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
+const TOKEN_PATH = path.join(os.homedir(), '.gmail-mcp', 'gmail-token.json');
+const CREDENTIALS_PATH = path.join(os.homedir(), '.gmail-mcp', 'gcp-oauth.keys.json');
 
 /**
  * Get and store new token after prompting for user authorization
@@ -41,6 +42,13 @@ async function getNewToken(oAuth2Client: OAuth2Client): Promise<OAuth2Client> {
   const { tokens } = await oAuth2Client.getToken(code);
   oAuth2Client.setCredentials(tokens);
   
+  // Ensure the token directory exists
+  const tokenDir = path.dirname(TOKEN_PATH);
+  if (!fs.existsSync(tokenDir)) {
+    console.log(`Creating token directory: ${tokenDir}`);
+    fs.mkdirSync(tokenDir, { recursive: true });
+  }
+  
   // Store the token for future use
   fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
   console.log('Token stored to', TOKEN_PATH);
@@ -53,26 +61,147 @@ async function getNewToken(oAuth2Client: OAuth2Client): Promise<OAuth2Client> {
  */
 export async function getAuthClient(): Promise<OAuth2Client> {
   try {
+    console.log('Looking for credentials at:', CREDENTIALS_PATH);
+    
+    // Check if credentials file exists
+    if (!fs.existsSync(CREDENTIALS_PATH)) {
+      console.error('Credentials file not found at:', CREDENTIALS_PATH);
+      throw new Error(`Credentials file not found at: ${CREDENTIALS_PATH}`);
+    }
+    
     // Load client secrets from a local file
     const content = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
-    const credentials = JSON.parse(content);
-    const { client_secret, client_id, redirect_uris } = credentials.installed || credentials.web;
+    console.log('Credentials file found, parsing content');
     
+    const credentials = JSON.parse(content);
+    console.log('Credential keys:', Object.keys(credentials));
+    
+    // Handle different credential formats
+    let clientId, clientSecret, redirectUri;
+    
+    if (credentials.installed) {
+      clientId = credentials.installed.client_id;
+      clientSecret = credentials.installed.client_secret;
+      redirectUri = credentials.installed.redirect_uris?.[0] || 'http://localhost';
+      console.log('Using "installed" credentials format');
+    } else if (credentials.web) {
+      clientId = credentials.web.client_id;
+      clientSecret = credentials.web.client_secret;
+      redirectUri = credentials.web.redirect_uris?.[0] || 'http://localhost';
+      console.log('Using "web" credentials format');
+    } else if (credentials.client_id && credentials.client_secret) {
+      // Direct format with client_id and client_secret at the root
+      clientId = credentials.client_id;
+      clientSecret = credentials.client_secret;
+      redirectUri = credentials.redirect_uri || 'http://localhost';
+      console.log('Using direct credential format');
+    } else {
+      console.error('Unrecognized credential format:', Object.keys(credentials));
+      throw new Error('Unrecognized credential format. Expected "installed", "web", or direct credentials.');
+    }
+    
+    if (!clientId || !clientSecret) {
+      throw new Error('Missing required credentials (client_id or client_secret)');
+    }
+    
+    console.log('Creating OAuth2 client with credentials');
     // Create OAuth2 client
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+    const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
     
     // Check if we have previously stored a token
     if (fs.existsSync(TOKEN_PATH)) {
+      console.log('Using token from:', TOKEN_PATH);
       const token = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf-8'));
       oAuth2Client.setCredentials(token);
       return oAuth2Client;
     }
     
+    console.log('No token found, initiating new authentication flow');
     // If no stored token, get a new one
     return await getNewToken(oAuth2Client);
   } catch (error) {
     console.error('Error loading client secret file or getting auth token:', error);
     throw error;
+  }
+}
+
+/**
+ * Verify credentials are accessible and properly formatted
+ * Useful for diagnostics
+ */
+export async function verifyCredentials(): Promise<{valid: boolean; info: any}> {
+  try {
+    console.log('Verifying credentials at:', CREDENTIALS_PATH);
+    
+    if (!fs.existsSync(CREDENTIALS_PATH)) {
+      console.error('Credentials file not found at:', CREDENTIALS_PATH);
+      return {valid: false, info: {error: 'Credentials file not found', path: CREDENTIALS_PATH}};
+    }
+    
+    const content = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
+    const contentPreview = content.substring(0, 100) + '...';
+    console.log('Credentials file content (first 100 chars):', contentPreview);
+    
+    const credentials = JSON.parse(content);
+    const credentialKeys = Object.keys(credentials);
+    console.log('Credential keys:', credentialKeys);
+    
+    if (credentials.installed) {
+      const installedKeys = Object.keys(credentials.installed);
+      console.log('Found "installed" credentials format with keys:', installedKeys);
+      const hasRequired = !!credentials.installed.client_id && !!credentials.installed.client_secret;
+      return {
+        valid: hasRequired, 
+        info: {
+          format: 'installed',
+          keys: installedKeys,
+          hasClientId: !!credentials.installed.client_id,
+          hasClientSecret: !!credentials.installed.client_secret,
+          hasRedirectUris: Array.isArray(credentials.installed.redirect_uris) && credentials.installed.redirect_uris.length > 0
+        }
+      };
+    } else if (credentials.web) {
+      const webKeys = Object.keys(credentials.web);
+      console.log('Found "web" credentials format with keys:', webKeys);
+      const hasRequired = !!credentials.web.client_id && !!credentials.web.client_secret;
+      return {
+        valid: hasRequired, 
+        info: {
+          format: 'web',
+          keys: webKeys,
+          hasClientId: !!credentials.web.client_id,
+          hasClientSecret: !!credentials.web.client_secret,
+          hasRedirectUris: Array.isArray(credentials.web.redirect_uris) && credentials.web.redirect_uris.length > 0
+        }
+      };
+    } else if (credentials.client_id && credentials.client_secret) {
+      console.log('Found direct credential format');
+      return {
+        valid: true, 
+        info: {
+          format: 'direct',
+          keys: credentialKeys
+        }
+      };
+    } else {
+      console.error('Unrecognized credential format');
+      return {
+        valid: false, 
+        info: {
+          error: 'Unrecognized credential format',
+          keys: credentialKeys,
+          content: contentPreview
+        }
+      };
+    }
+  } catch (error) {
+    console.error('Error verifying credentials:', error);
+    return {
+      valid: false, 
+      info: {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    };
   }
 }
 
@@ -177,7 +306,13 @@ export async function getEmailDetails(messageId: string) {
     }
     
     // Get attachments if any
-    const attachments = [];
+    const attachments: Array<{
+      id: string | undefined;
+      filename: string;
+      mimeType: string;
+      size: number;
+      partId: string;
+    }> = [];
     
     const processAttachments = (parts: any[], path = '') => {
       if (!parts) return;

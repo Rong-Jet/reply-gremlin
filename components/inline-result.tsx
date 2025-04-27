@@ -89,14 +89,14 @@ export function InlineResult({ result, onClose, onConfirm, onCancel, onReplyText
               className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md flex items-center gap-2 text-sm transition-colors"
             >
               <XIcon size={14} />
-              Abbrechen
+              Cancel
             </button>
             <button
               onClick={onConfirm}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md flex items-center gap-2 text-sm transition-colors"
             >
               <Check size={14} />
-              Bestätigen
+              Confirm
             </button>
           </div>
         )}

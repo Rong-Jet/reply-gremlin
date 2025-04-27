@@ -2,6 +2,7 @@
 
 import type { Email } from "@/types/email"
 import { formatDate } from "@/lib/utils"
+import { Paperclip, CornerUpRight } from "lucide-react"
 
 interface EmailListProps {
   emails: Email[]
@@ -18,10 +19,10 @@ export function EmailList({ emails, selectedEmailId, onSelectEmail }: EmailListP
         <ul className="divide-y divide-gray-800">
           {emails.map((email) => (
             <li
-              key={email.id}
+              key={email.email_id}
               onClick={() => onSelectEmail(email)}
               className={`p-4 cursor-pointer transition-colors duration-200 hover:bg-gray-800 ${
-                email.id === selectedEmailId ? "bg-gray-800 border-l-4 border-blue-500" : ""
+                email.email_id === selectedEmailId ? "bg-gray-800 border-l-4 border-blue-500" : ""
               } ${email.unread ? "bg-gray-900/80" : ""}`}
               style={{ height: "96px" }}
             >
@@ -30,12 +31,24 @@ export function EmailList({ emails, selectedEmailId, onSelectEmail }: EmailListP
                   {email.sender}
                   {email.unread && <span className="ml-2 inline-block w-2 h-2 bg-blue-500 rounded-full"></span>}
                 </div>
-                <div className="text-xs text-gray-500">{formatDate(email.timestamp)}</div>
+                <div className="text-xs text-gray-500">{formatDate(email.received_date)}</div>
               </div>
               <div className={`text-sm mt-1 truncate ${email.unread ? "font-medium text-gray-200" : "text-gray-300"}`}>
                 {email.subject}
+                {email.attachments && email.attachments.length > 0 && (
+                  <span className="ml-2 inline-flex items-center">
+                    <Paperclip size={12} className="text-gray-400" />
+                  </span>
+                )}
+                {email.replied && (
+                  <span className="ml-2 inline-flex items-center">
+                    <CornerUpRight size={12} className="text-blue-400" />
+                  </span>
+                )}
               </div>
-              <div className="text-xs text-gray-500 mt-1 truncate">{email.content.substring(0, 60)}...</div>
+              <div className="text-xs text-gray-500 mt-1 truncate">
+                {email.summary || email.email_content.substring(0, 60) + "..."}
+              </div>
             </li>
           ))}
         </ul>
