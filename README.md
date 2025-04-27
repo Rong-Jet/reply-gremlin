@@ -13,7 +13,7 @@ Email handling voice assistant that helps reply to and organise emails, all in a
 2. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/openai/openai-realtime-solar-system.git
+   git clone https://github.com/Rong-Jet/reply-gremlin.git
    ```
 
 3. **Set your API key:**
@@ -27,20 +27,21 @@ Email handling voice assistant that helps reply to and organise emails, all in a
      OPENAI_API_KEY=<your_api_key>
      ```
 
-4. **Install dependencies:**
-
+4. **Setup: Backend**
+   
+   [Backend README](backend-python/README.md)
+  
+7. **Setup: Frontend**
    Navigate to the project directory and run:
 
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
-5. **Run the app:**
+8. **Run the app:**
 
    ```bash
    npm run dev
    ```
 
    The app will be available at [http://localhost:3000](http://localhost:3000).
-
-**Note:** the 1st time you load the app, the scene can take a while to load (it's heavy!). The subsequent loads should be faster as it will be cached.
