@@ -1,10 +1,20 @@
+export interface Attachment {
+  filename: string
+  mime_type: string
+}
+
 export interface Email {
-  id: string
+  email_id: string
   sender: string
+  recipients: string[]
   subject: string
-  content: string
-  timestamp: string
+  email_content: string
+  received_date: string
+  summary: string
+  attachments: Attachment[]
   unread: boolean
+  replied?: boolean
+  lastReply?: string
 }
 
 export interface ActionResult {

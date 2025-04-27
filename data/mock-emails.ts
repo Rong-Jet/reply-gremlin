@@ -2,10 +2,11 @@ import type { Email } from "@/types/email"
 
 export const mockEmails: Email[] = [
   {
-    id: "1",
-    sender: "John Smith <john.smith@example.com>",
+    email_id: "1",
+    sender: "john.smith@example.com",
+    recipients: ["team@example.com"],
     subject: "Project Status Update",
-    content: `Hi Team,
+    email_content: `Hi Team,
 
 I wanted to provide a quick update on the current project status. We've completed the initial phase and are now moving into development.
 
@@ -18,14 +19,22 @@ Please review the attached documents and provide your feedback by EOD tomorrow.
 
 Best regards,
 John`,
-    timestamp: "2023-06-15T09:30:00Z",
+    received_date: "2023-06-15T09:30:00Z",
+    summary: "Project status update showing 90% completion of frontend, defined API endpoints, and finalized database schema.",
+    attachments: [
+      {
+        filename: "project_docs.pdf",
+        mime_type: "application/pdf"
+      }
+    ],
     unread: false,
   },
   {
-    id: "2",
-    sender: "Marketing Team <marketing@example.com>",
+    email_id: "2",
+    sender: "marketing@example.com",
+    recipients: ["all-staff@example.com"],
     subject: "New Campaign Launch",
-    content: `Hello everyone,
+    email_content: `Hello everyone,
 
 We're excited to announce the launch of our new marketing campaign next week. This initiative will focus on our latest product features and target our core demographic.
 
@@ -38,14 +47,17 @@ The creative assets are available in the shared drive. Please familiarize yourse
 
 Regards,
 Marketing Team`,
-    timestamp: "2023-06-14T16:45:00Z",
+    received_date: "2023-06-14T16:45:00Z",
+    summary: "Announcement of new marketing campaign launching June 20th with the message 'Transform Your Workflow'.",
+    attachments: [],
     unread: true,
   },
   {
-    id: "3",
-    sender: "Sarah Johnson <sarah.j@example.com>",
+    email_id: "3",
+    sender: "sarah.j@example.com",
+    recipients: ["you@example.com"],
     subject: "Meeting Rescheduled",
-    content: `Hi there,
+    email_content: `Hi there,
 
 Due to some unforeseen circumstances, we need to reschedule tomorrow's quarterly review meeting.
 
@@ -59,14 +71,22 @@ Please let me know if this new time works for you. If not, we can look at altern
 
 Thanks for your understanding,
 Sarah`,
-    timestamp: "2023-06-14T11:20:00Z",
+    received_date: "2023-06-14T11:20:00Z",
+    summary: "Quarterly review meeting rescheduled to June 18th, 2-3:30 PM in the Main Conference Room.",
+    attachments: [
+      {
+        filename: "calendar_invite.ics",
+        mime_type: "text/calendar"
+      }
+    ],
     unread: false,
   },
   {
-    id: "4",
-    sender: "Tech Support <support@example.com>",
+    email_id: "4",
+    sender: "support@example.com",
+    recipients: ["you@example.com"],
     subject: "Your Recent Support Ticket #45678",
-    content: `Dear User,
+    email_content: `Dear User,
 
 Thank you for contacting our support team. We've received your ticket regarding the login issues you've been experiencing.
 
@@ -76,14 +96,17 @@ Please try logging in again and let us know if you continue to experience any is
 
 Best regards,
 Tech Support Team`,
-    timestamp: "2023-06-13T14:15:00Z",
+    received_date: "2023-06-13T14:15:00Z",
+    summary: "Response to support ticket #45678 regarding login issues, which were caused by a server update and have been fixed.",
+    attachments: [],
     unread: true,
   },
   {
-    id: "5",
-    sender: "Alex Chen <alex.chen@example.com>",
+    email_id: "5",
+    sender: "alex.chen@example.com",
+    recipients: ["partners@example.com"],
     subject: "Invitation: Product Demo",
-    content: `Hello,
+    email_content: `Hello,
 
 I'd like to invite you to an exclusive demo of our upcoming product features. As a valued partner, we want to give you a sneak peek before the public release.
 
@@ -99,7 +122,14 @@ Looking forward to your participation!
 Best,
 Alex Chen
 Product Manager`,
-    timestamp: "2023-06-12T10:00:00Z",
+    received_date: "2023-06-12T10:00:00Z",
+    summary: "Invitation to an exclusive product demo on June 22nd, 11 AM-12 PM via Microsoft Teams.",
+    attachments: [
+      {
+        filename: "product_preview.pptx",
+        mime_type: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      }
+    ],
     unread: false,
   },
 ]

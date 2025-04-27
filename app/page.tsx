@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { INSTRUCTIONS, TOOLS } from "@/lib/config";
 import { BASE_URL, MODEL } from "@/lib/constants";
 import { MCP_SERVER, EMAIL_TOOLS } from "@/lib/mcp";
+import type { SearchMailsResponse, ReadMailResponse } from "@/lib/gmail-functions";
+import { parseCodeBlockResponse } from "@/lib/utils";
 
 // imports from email-voice-ai app
 import { LeftPanel } from "@/components/left-panel"
@@ -78,8 +80,33 @@ export default function Home() {
 
   // Initialize data on client side only
   useEffect(() => {
-    setEmails(mockEmails)
-    setSelectedEmail(mockEmails[0] || null)
+    const fetchEmails = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/session/get-mails');
+        if (!response.ok) {
+          throw new Error('Failed to fetch emails');
+        }
+        
+        // Get the response as text and parse it
+        const rawText = await response.text();
+        const emailsData = parseCodeBlockResponse(rawText);
+        
+        // Handle the response structure which has an "emails" property
+        const emailsList = emailsData.emails || emailsData;
+        
+        console.log('Fetched emails:', emailsList.length);
+        setEmails(emailsList);
+        setSelectedEmail(emailsList[0] || null);
+      } catch (error) {
+        console.error('Error fetching emails:', error);
+        // Fallback to mock data if fetch fails
+        console.log('Falling back to mock data');
+        setEmails(mockEmails);
+        setSelectedEmail(mockEmails[0] || null);
+      }
+    };
+
+    fetchEmails();
   }, [])
 
   // Create audio element for playback
@@ -217,7 +244,7 @@ export default function Home() {
               const sessionUpdate = {
                 type: "session.update",
                 session: {
-                  instructions: "You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account. Always consider using the tools when asked about emails.",
+                  instructions: "You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account. Always consider using the tools when asked about emails. When asked to summarize an email, keep it short and concise to one sentence.",
                   voice: "alloy",
                   temperature: 0.7,
                   input_audio_transcription: { model: "whisper-1" },
@@ -719,107 +746,201 @@ export default function Home() {
       console.log("Connection check passed, processing tool function:", toolCall.name);
   
       // Handle specific tool functions
-      switch (toolCall.name) {
-        case "get_emails":
-          toolCallOutput = {
-            response: "Retrieved emails successfully",
-            emails: mockEmails.slice(0, toolCall.arguments.limit || 5) // Use mock emails for demo
-          };
-          break;
-          
-        case "read_email":
-          const email = mockEmails.find(e => e.id === toolCall.arguments.email_id);
-          if (email) {
+      try {
+        switch (toolCall.name) {
+          case "get_emails":
             toolCallOutput = {
-              response: `Email content retrieved: ${email.content}`,
-              email: email
+              response: "Retrieved emails successfully",
+              emails: emails.slice(0, toolCall.arguments.limit || 5) // Use mock emails for demo
             };
-          } else {
-            toolCallOutput = {
-              response: "Email not found",
-              error: "Email ID not found"
-            };
-          }
-          break;
-          
-        case "send_reply":
-          toolCallOutput = {
-            response: `Reply sent to email ${toolCall.arguments.email_id}`,
-            success: true
-          };
-          break;
-          
-        case "delete_email":
-          toolCallOutput = {
-            response: `Email ${toolCall.arguments.email_id} deleted`,
-            success: true
-          };
-          break;
-          
-        case "search_mails":
-          // Use the mock emails for demonstration
-          const searchQuery = toolCall.arguments.query || '';
-          const maxResults = toolCall.arguments.max_results || 10;
-          
-          // Simple filtering based on query (just for demo)
-          let filteredEmails = [...mockEmails];
-          
-          if (searchQuery.includes('unread')) {
-            filteredEmails = filteredEmails.filter(e => e.unread);
-          }
-          
-          if (searchQuery.includes('inbox')) {
-            // All mock emails are in inbox, so no filtering needed
-          }
-          
-          // Limit results
-          filteredEmails = filteredEmails.slice(0, maxResults);
-          
-          toolCallOutput = {
-            response: `Found ${filteredEmails.length} emails matching "${searchQuery}"`,
-            emails: filteredEmails,
-            count: filteredEmails.length,
-            total_estimate: mockEmails.length
-          };
-          break;
-          
-        case "read_mail":
-          const mailId = toolCall.arguments.message_id;
-          const targetEmail = mockEmails.find(e => e.id === mailId);
-          
-          if (targetEmail) {
-            toolCallOutput = {
-              response: `Email content retrieved: ${targetEmail.content}`,
-              email: {
-                id: targetEmail.id,
-                threadId: targetEmail.id, // Using same ID for demo
-                labelIds: targetEmail.unread ? ['UNREAD', 'INBOX'] : ['INBOX'],
-                snippet: targetEmail.content.substring(0, 100) + '...',
-                historyId: '12345',
-                internalDate: targetEmail.timestamp,
-                headers: {
-                  subject: targetEmail.subject,
-                  from: targetEmail.sender,
-                  to: 'you@example.com',
-                  date: targetEmail.timestamp,
-                },
-                body: targetEmail.content,
-                attachments: [],
+            break;
+            
+          case "read_email":
+            const email = emails.find(e => e.email_id === toolCall.arguments.email_id);
+            if (email) {
+              toolCallOutput = {
+                response: `Email content retrieved: ${email.email_content}`,
+                email: email
+              };
+            } else {
+              toolCallOutput = {
+                response: "Email not found",
+                error: "Email ID not found"
+              };
+            }
+            break;
+            
+          case "send_reply":
+            const replyToId = toolCall.arguments.email_id;
+            const replyMessage = toolCall.arguments.message || '';
+            
+            // Find the email to reply to
+            const emailToReply = emails.find(e => e.email_id === replyToId);
+            
+            if (emailToReply) {
+              // Mark the email as replied (in a real app, you'd send the reply via API)
+              // For demo purposes, we'll just update a state field to simulate a reply
+              setEmails(prevEmails => 
+                prevEmails.map(e => 
+                  e.email_id === replyToId 
+                    ? { ...e, replied: true, lastReply: replyMessage } 
+                    : e
+                )
+              );
+              
+              toolCallOutput = {
+                response: `Reply sent to "${emailToReply.subject}"`,
+                success: true,
+                email: {
+                  email_id: emailToReply.email_id,
+                  subject: emailToReply.subject,
+                  sender: emailToReply.sender,
+                  reply_content: replyMessage
+                }
+              };
+            } else {
+              toolCallOutput = {
+                response: `Could not find email with ID ${replyToId} to reply to.`,
+                success: false,
+                error: "Email not found"
+              };
+            }
+            break;
+            
+          case "delete_email":
+            const emailId = toolCall.arguments.email_id;
+            
+            // Find the email to be deleted
+            const emailToDelete = emails.find(e => e.email_id === emailId);
+            
+            if (emailToDelete) {
+              // Remove the email from the state
+              setEmails(prevEmails => prevEmails.filter(e => e.email_id !== emailId));
+              
+              // If the deleted email was selected, select the next available email
+              if (selectedEmail && selectedEmail.email_id === emailId) {
+                const remainingEmails = emails.filter(e => e.email_id !== emailId);
+                setSelectedEmail(remainingEmails.length > 0 ? remainingEmails[0] : null);
               }
-            };
-          } else {
+              
+              toolCallOutput = {
+                response: `Email with subject "${emailToDelete.subject}" was deleted successfully.`,
+                success: true,
+                deleted_email: {
+                  email_id: emailToDelete.email_id,
+                  subject: emailToDelete.subject,
+                  sender: emailToDelete.sender,
+                  received_date: emailToDelete.received_date
+                }
+              };
+            } else {
+              toolCallOutput = {
+                response: `Could not find email with ID ${emailId}.`,
+                success: false,
+                error: "Email not found"
+              };
+            }
+            break;
+            
+          case "search_mails":
+            console.log("Calling Gmail API search_mails function via API route");
+            try {
+              const response = await fetch('/api/gmail', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  functionName: 'search_mails',
+                  args: {
+                    query: toolCall.arguments.query || '',
+                    max_results: toolCall.arguments.max_results || 10
+                  }
+                }),
+              });
+              
+              const searchResult = await response.json();
+              
+              if ('error' in searchResult) {
+                console.error("Gmail API search_mails error:", searchResult.error);
+                toolCallOutput = {
+                  response: `Error searching emails: ${searchResult.error}`,
+                  error: searchResult.error
+                };
+              } else {
+                // Type assertion to let TypeScript know this is a SearchMailsResponse
+                const typedSearchResult = searchResult as SearchMailsResponse;
+                console.log("Gmail API search_mails success:", typedSearchResult);
+                toolCallOutput = {
+                  response: `Found ${typedSearchResult.emails.length} emails matching "${toolCall.arguments.query}"`,
+                  emails: typedSearchResult.emails,
+                  count: typedSearchResult.count,
+                  total_estimate: typedSearchResult.total_estimate
+                };
+              }
+            } catch (error: any) {
+              console.error("Error calling Gmail API route:", error);
+              toolCallOutput = {
+                response: `Error calling Gmail API: ${error.message || "Unknown error"}`,
+                error: error.message || "Unknown error"
+              };
+            }
+            break;
+            
+          case "read_mail":
+            console.log("Calling Gmail API read_mail function via API route");
+            try {
+              const response = await fetch('/api/gmail', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  functionName: 'read_mail',
+                  args: {
+                    message_id: toolCall.arguments.message_id || ''
+                  }
+                }),
+              });
+              
+              const mailResult = await response.json();
+              
+              if ('error' in mailResult) {
+                console.error("Gmail API read_mail error:", mailResult.error);
+                toolCallOutput = {
+                  response: `Error reading email: ${mailResult.error}`,
+                  error: mailResult.error
+                };
+              } else {
+                // Type assertion to let TypeScript know this is a ReadMailResponse
+                const typedMailResult = mailResult as ReadMailResponse;
+                console.log("Gmail API read_mail success:", typedMailResult);
+                toolCallOutput = {
+                  response: `Email content retrieved successfully`,
+                  email: typedMailResult.email
+                };
+              }
+            } catch (error: any) {
+              console.error("Error calling Gmail API route:", error);
+              toolCallOutput = {
+                response: `Error calling Gmail API: ${error.message || "Unknown error"}`,
+                error: error.message || "Unknown error"
+              };
+            }
+            break;
+            
+          default:
             toolCallOutput = {
-              response: "Email not found",
-              error: "Message ID not found"
+              response: `Unknown tool function: ${toolCall.name}`,
+              error: "Unknown function"
             };
-          }
-          break;
-          
-        default:
-          toolCallOutput = {
-            response: `Unknown tool function: ${toolCall.name}`,
-            error: "Unknown function"
-          };
+        }
+      } catch (error: any) {
+        console.error("Error processing tool function:", error);
+        toolCallOutput = {
+          response: `Error processing tool function: ${error.message || "Unknown error"}`,
+          error: error.message || "Unknown error"
+        };
       }
       
       console.log("Tool function processed, result:", toolCallOutput);
@@ -924,7 +1045,7 @@ export default function Home() {
 
     // Mark as read when selected
     if (email.unread) {
-      setEmails(emails.map((e: Email) => (e.id === email.id ? { ...e, unread: false } : e)))
+      setEmails(emails.map((e: Email) => (e.email_id === email.email_id ? { ...e, unread: false } : e)))
     }
   }
 
@@ -934,7 +1055,7 @@ export default function Home() {
       if (!selectedEmail) return
 
       if (action === "markUnread") {
-        setEmails(emails.map((email: Email) => (email.id === selectedEmail?.id ? { ...email, unread: true } : email)))
+        setEmails(emails.map((email: Email) => (email.email_id === selectedEmail?.email_id ? { ...email, unread: true } : email)))
 
         // Kurze Bestätigungsmeldung anzeigen
         const result: ActionResult = {
@@ -949,7 +1070,7 @@ export default function Home() {
           setActionResult(null)
         }, 2000)
       } else if (action === "skip") {
-        const currentIndex = emails.findIndex((email: Email) => email.id === selectedEmail?.id)
+        const currentIndex = emails.findIndex((email: Email) => email.email_id === selectedEmail?.email_id)
         const nextIndex = (currentIndex + 1) % emails.length
         setSelectedEmail(emails[nextIndex])
 
@@ -1013,8 +1134,8 @@ export default function Home() {
     switch (action) {
       case "delete":
         result.message = `E-Mail mit dem Betreff "${selectedEmail?.subject}" wurde gelöscht.`
-        setEmails(emails.filter((email: Email) => email.id !== selectedEmail?.id))
-        setSelectedEmail(emails.find((email: Email) => email.id !== selectedEmail?.id) || null)
+        setEmails(emails.filter((email: Email) => email.email_id !== selectedEmail?.email_id))
+        setSelectedEmail(emails.find((email: Email) => email.email_id !== selectedEmail?.email_id) || null)
         break
       case "reply":
         result.message = `Antwort für E-Mail mit dem Betreff "${selectedEmail?.subject}" wurde gesendet.`
@@ -1022,13 +1143,13 @@ export default function Home() {
         break
       case "skip":
         result.message = `E-Mail mit dem Betreff "${selectedEmail?.subject}" wurde übersprungen.`
-        const currentIndex = emails.findIndex((email: Email) => email.id === selectedEmail?.id)
+        const currentIndex = emails.findIndex((email: Email) => email.email_id === selectedEmail?.email_id)
         const nextIndex = (currentIndex + 1) % emails.length
         setSelectedEmail(emails[nextIndex])
         break
       case "markUnread":
         result.message = `E-Mail mit dem Betreff "${selectedEmail?.subject}" wurde als ungelesen markiert.`
-        setEmails(emails.map((email: Email) => (email.id === selectedEmail?.id ? { ...email, unread: true } : email)))
+        setEmails(emails.map((email: Email) => (email.email_id === selectedEmail?.email_id ? { ...email, unread: true } : email)))
         break
     }
 
@@ -1118,7 +1239,7 @@ export default function Home() {
       <div className="flex w-full h-[calc(100vh-2rem)] gap-4 max-w-7xl mx-auto">
         <LeftPanel
           emails={emails}
-          selectedEmailId={selectedEmail?.id || ""}
+          selectedEmailId={selectedEmail?.email_id || ""}
           onSelectEmail={handleSelectEmail}
           onAction={handleAction}
           isProcessing={isProcessing}

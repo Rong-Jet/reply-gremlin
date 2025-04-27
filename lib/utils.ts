@@ -29,3 +29,29 @@ export function formatDate(dateString: string): string {
     return date.toLocaleDateString([], { month: "short", day: "numeric" })
   }
 }
+
+/**
+ * Parse a response that might be wrapped in markdown code blocks
+ * 
+ * @param text The response text that might contain markdown code blocks
+ * @returns Parsed JSON data
+ */
+export function parseCodeBlockResponse(text: string): any {
+  // Check if the response is wrapped in markdown code blocks
+  let jsonText = text;
+  
+  // If it starts with ```json or ```
+  if (text.startsWith('```json') || text.startsWith('```')) {
+    // Extract the content between the markdown code blocks
+    jsonText = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+  }
+  
+  try {
+    // Parse the cleaned JSON
+    return JSON.parse(jsonText);
+  } catch (error) {
+    console.error('Error parsing response:', error);
+    console.error('Response content:', jsonText);
+    throw new Error('Invalid JSON in response');
+  }
+}
