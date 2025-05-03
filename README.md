@@ -1,5 +1,8 @@
-# reply-gremlin
+# <img src="public/gremlin_icon.png" height="30"> Reply Gremlin 
 Email handling voice assistant that helps reply to and organise emails, all in a real-time conversational experience.
+
+![Web App Screenshot](public/Screenshot-Frontend-1.png)
+
 
 ## How to use
 

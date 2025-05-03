@@ -9,7 +9,12 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Email Voice AI Assistant",
   description: "A futuristic email voice AI assistant interface",
-  generator: 'v0.dev'
+  generator: 'v0dev',
+  icons: {
+    icon: '/gremlin_icon.png',
+    apple: '/gremlin_icon.png',
+    shortcut: '/gremlin_icon.png'
+  }
 }
 
 export default function RootLayout({
