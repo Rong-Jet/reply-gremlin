@@ -26,6 +26,10 @@ This is a Python FastAPI backend that provides a WebSocket endpoint for the Gmai
    - Place this file in either:
      - `~/.gmail-mcp/gcp-oauth.keys.json` or
      - Current directory as `gcp-oauth.keys.json`
+   - Run 
+   ```sh
+   npx @gongrzhe/server-gmail-autoauth-mcp auth
+   ```
 
 ## Run the server
 

@@ -1,0 +1,3109 @@
+2025-04-27 03:06:18,640 - gmail_auth - INFO - Starting Gmail authentication process
+2025-04-27 03:06:18,641 - gmail_auth - INFO - Initializing Gmail MCP Server... This may take a moment for first-time authentication.
+2025-04-27 03:06:18,641 - gmail_auth - INFO - A browser window should open for Google authentication. Please log in and grant permissions.
+2025-04-27 03:06:18,641 - gmail_auth - DEBUG - Checking for credentials at: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:06:18,641 - gmail_auth - DEBUG - Checking for credentials at: /Users/rongjet.cheong/Desktop/Code/reply-gremlin/backend-python/gcp-oauth.keys.json
+2025-04-27 03:06:18,641 - gmail_auth - INFO - Using credentials from: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:06:19,959 - gmail_auth - INFO - Gmail MCP Server initialized successfully
+2025-04-27 03:06:19,960 - gmail_auth - INFO - Gmail authentication successful
+2025-04-27 03:06:19,960 - gmail_auth - DEBUG - Initializing Gmail Assistant agent
+2025-04-27 03:06:19,960 - gmail_auth - INFO - Fetching emails
+2025-04-27 03:06:19,962 - openai.agents - DEBUG - Creating trace Agent workflow with id trace_50ac3d595d9b4a948c9ec78001046570
+2025-04-27 03:06:19,962 - openai.agents - DEBUG - Setting current trace: trace_50ac3d595d9b4a948c9ec78001046570
+2025-04-27 03:06:19,963 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.AgentSpanData object at 0x10a2cd850> with id None
+2025-04-27 03:06:19,963 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.MCPListToolsSpanData object at 0x10a2eee40> with id None
+2025-04-27 03:06:19,969 - openai.agents - DEBUG - Running agent Gmail Assistant (turn 1)
+2025-04-27 03:06:19,974 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.ResponseSpanData object at 0x10a2cbed0> with id None
+2025-04-27 03:06:19,975 - openai.agents - DEBUG - Calling LLM gpt-4o with input:
+[
+  {
+    "content": "\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user's Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. \"2025-04-25T14:30:00Z\")\n   - **subject**: the email's subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment's file name\n     - **mime_type**: the attachment's MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  \"emails\": [\n    {\n      \"email_id\": \"STRING\",\n      \"summary\": \"STRING\",\n      \"email_content\": \"STRING\",\n      \"sender\": \"STRING\",\n      \"recipients\": [\"STRING\", ...],\n      \"received_date\": \"STRING\",\n      \"subject\": \"STRING\",\n      \"attachments\": [\n        {\n          \"filename\": \"STRING\",\n          \"mime_type\": \"STRING\"\n        },\n        \u2026\n      ]\n    },\n    \u2026\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n",
+    "role": "user"
+  }
+]
+Tools:
+[
+  {
+    "name": "send_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Sends a new email"
+  },
+  {
+    "name": "draft_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Draft a new email"
+  },
+  {
+    "name": "read_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to retrieve"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves the content of a specific email"
+  },
+  {
+    "name": "search_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Gmail search query (e.g., 'from:example@gmail.com')"
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Maximum number of results to return"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Searches for emails using Gmail search syntax"
+  },
+  {
+    "name": "modify_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to modify"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to apply"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to the message"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from the message"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies email labels (move to different folders)"
+  },
+  {
+    "name": "delete_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to delete"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes an email"
+  },
+  {
+    "name": "list_email_labels",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "description": "Retrieves all available Gmail labels",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves all available Gmail labels"
+  },
+  {
+    "name": "batch_modify_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to modify"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to all messages"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from all messages"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies labels for multiple emails in batches"
+  },
+  {
+    "name": "batch_delete_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to delete"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes multiple emails in batches"
+  },
+  {
+    "name": "create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name for the new label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Creates a new Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Creates a new Gmail label"
+  },
+  {
+    "name": "update_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "New name for the label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Updates an existing Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Updates an existing Gmail label"
+  },
+  {
+    "name": "delete_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to delete"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Deletes a Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Deletes a Gmail label"
+  },
+  {
+    "name": "get_or_create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the label to get or create"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Gets an existing label by name or creates it if it doesn't exist",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Gets an existing label by name or creates it if it doesn't exist"
+  }
+]
+Stream: False
+Tool choice: NOT_GIVEN
+Response format: NOT_GIVEN
+Previous response id: None
+
+2025-04-27 03:06:19,978 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/responses', 'headers': {'User-Agent': 'Agents/Python 0.0.13'}, 'files': None, 'idempotency_key': 'stainless-python-retry-026c5b23-8a18-4636-bc90-a4a4ed8d394b', 'json_data': {'input': [{'content': '\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user\'s Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. "2025-04-25T14:30:00Z")\n   - **subject**: the email\'s subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment\'s file name\n     - **mime_type**: the attachment\'s MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  "emails": [\n    {\n      "email_id": "STRING",\n      "summary": "STRING",\n      "email_content": "STRING",\n      "sender": "STRING",\n      "recipients": ["STRING", ...],\n      "received_date": "STRING",\n      "subject": "STRING",\n      "attachments": [\n        {\n          "filename": "STRING",\n          "mime_type": "STRING"\n        },\n        …\n      ]\n    },\n    …\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n', 'role': 'user'}], 'model': 'gpt-4o', 'include': [], 'instructions': 'You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account.', 'stream': False, 'tools': [{'name': 'send_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Sends a new email'}, {'name': 'draft_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Draft a new email'}, {'name': 'read_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to retrieve'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves the content of a specific email'}, {'name': 'search_emails', 'parameters': {'type': 'object', 'properties': {'query': {'type': 'string', 'description': "Gmail search query (e.g., 'from:example@gmail.com')"}, 'maxResults': {'type': 'number', 'description': 'Maximum number of results to return'}}, 'required': ['query'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Searches for emails using Gmail search syntax'}, {'name': 'modify_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to modify'}, 'labelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to apply'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to the message'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from the message'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies email labels (move to different folders)'}, {'name': 'delete_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to delete'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes an email'}, {'name': 'list_email_labels', 'parameters': {'type': 'object', 'properties': {}, 'additionalProperties': False, 'description': 'Retrieves all available Gmail labels', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves all available Gmail labels'}, {'name': 'batch_modify_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to modify'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to all messages'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from all messages'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies labels for multiple emails in batches'}, {'name': 'batch_delete_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to delete'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes multiple emails in batches'}, {'name': 'create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name for the new label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': 'Creates a new Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Creates a new Gmail label'}, {'name': 'update_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to update'}, 'name': {'type': 'string', 'description': 'New name for the label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Updates an existing Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Updates an existing Gmail label'}, {'name': 'delete_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to delete'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Deletes a Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Deletes a Gmail label'}, {'name': 'get_or_create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name of the label to get or create'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': "Gets an existing label by name or creates it if it doesn't exist", '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': "Gets an existing label by name or creates it if it doesn't exist"}]}}
+2025-04-27 03:06:19,979 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/responses
+2025-04-27 03:06:19,979 - httpcore.connection - DEBUG - close.started
+2025-04-27 03:06:19,979 - httpcore.connection - DEBUG - close.complete
+2025-04-27 03:06:19,979 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:06:20,003 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10a358250>
+2025-04-27 03:06:20,003 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x10a193e30> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:06:20,021 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10a358410>
+2025-04-27 03:06:20,021 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:20,022 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:06:20,022 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:06:20,022 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:06:20,022 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:21,343 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 27 Apr 2025 01:06:21 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'x-request-id', b'req_5f73e9ab4320bec77fb21d6dbe9e2717'), (b'openai-processing-ms', b'1117'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a6aab4ef44da6-FRA'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:06:21,344 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-04-27 03:06:21,344 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:06:21,490 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:06:21,491 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:06:21,491 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:06:21,491 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/responses "200 OK" Headers({'date': 'Sun, 27 Apr 2025 01:06:21 GMT', 'content-type': 'application/json', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'openai-version': '2020-10-01', 'openai-organization': 'tumai-mfvuze', 'x-request-id': 'req_5f73e9ab4320bec77fb21d6dbe9e2717', 'openai-processing-ms': '1117', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '936a6aab4ef44da6-FRA', 'content-encoding': 'gzip', 'alt-svc': 'h3=":443"; ma=86400'})
+2025-04-27 03:06:21,491 - openai._base_client - DEBUG - request_id: req_5f73e9ab4320bec77fb21d6dbe9e2717
+2025-04-27 03:06:21,493 - openai.agents - DEBUG - LLM resp:
+[
+  {
+    "arguments": "{\"query\":\"in:inbox\",\"maxResults\":5}",
+    "call_id": "call_2t3yQb0ynxLJ8X78K6zkjnIm",
+    "name": "search_emails",
+    "type": "function_call",
+    "id": "fc_680d830cd7c08192ad65a7d03036a26d02437f572407c7d0",
+    "status": "completed"
+  }
+]
+
+2025-04-27 03:06:21,494 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.FunctionSpanData object at 0x10a374e30> with id None
+2025-04-27 03:06:21,494 - openai.agents - DEBUG - Invoking MCP tool search_emails with input {"query":"in:inbox","maxResults":5}
+2025-04-27 03:06:21,529 - openai.agents - DEBUG - MCP tool search_emails returned meta=None content=[TextContent(type='text', text='Error: No access, refresh token, API key or refresh handler callback is set.', annotations=None)] isError=False
+2025-04-27 03:06:21,529 - openai.agents - DEBUG - Running agent Gmail Assistant (turn 2)
+2025-04-27 03:06:21,529 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.ResponseSpanData object at 0x10a3536b0> with id None
+2025-04-27 03:06:21,530 - openai.agents - DEBUG - Calling LLM gpt-4o with input:
+[
+  {
+    "content": "\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user's Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. \"2025-04-25T14:30:00Z\")\n   - **subject**: the email's subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment's file name\n     - **mime_type**: the attachment's MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  \"emails\": [\n    {\n      \"email_id\": \"STRING\",\n      \"summary\": \"STRING\",\n      \"email_content\": \"STRING\",\n      \"sender\": \"STRING\",\n      \"recipients\": [\"STRING\", ...],\n      \"received_date\": \"STRING\",\n      \"subject\": \"STRING\",\n      \"attachments\": [\n        {\n          \"filename\": \"STRING\",\n          \"mime_type\": \"STRING\"\n        },\n        \u2026\n      ]\n    },\n    \u2026\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n",
+    "role": "user"
+  },
+  {
+    "arguments": "{\"query\":\"in:inbox\",\"maxResults\":5}",
+    "call_id": "call_2t3yQb0ynxLJ8X78K6zkjnIm",
+    "name": "search_emails",
+    "type": "function_call",
+    "id": "fc_680d830cd7c08192ad65a7d03036a26d02437f572407c7d0",
+    "status": "completed"
+  },
+  {
+    "call_id": "call_2t3yQb0ynxLJ8X78K6zkjnIm",
+    "output": "{\"type\":\"text\",\"text\":\"Error: No access, refresh token, API key or refresh handler callback is set.\",\"annotations\":null}",
+    "type": "function_call_output"
+  }
+]
+Tools:
+[
+  {
+    "name": "send_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Sends a new email"
+  },
+  {
+    "name": "draft_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Draft a new email"
+  },
+  {
+    "name": "read_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to retrieve"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves the content of a specific email"
+  },
+  {
+    "name": "search_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Gmail search query (e.g., 'from:example@gmail.com')"
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Maximum number of results to return"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Searches for emails using Gmail search syntax"
+  },
+  {
+    "name": "modify_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to modify"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to apply"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to the message"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from the message"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies email labels (move to different folders)"
+  },
+  {
+    "name": "delete_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to delete"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes an email"
+  },
+  {
+    "name": "list_email_labels",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "description": "Retrieves all available Gmail labels",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves all available Gmail labels"
+  },
+  {
+    "name": "batch_modify_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to modify"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to all messages"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from all messages"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies labels for multiple emails in batches"
+  },
+  {
+    "name": "batch_delete_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to delete"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes multiple emails in batches"
+  },
+  {
+    "name": "create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name for the new label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Creates a new Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Creates a new Gmail label"
+  },
+  {
+    "name": "update_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "New name for the label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Updates an existing Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Updates an existing Gmail label"
+  },
+  {
+    "name": "delete_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to delete"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Deletes a Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Deletes a Gmail label"
+  },
+  {
+    "name": "get_or_create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the label to get or create"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Gets an existing label by name or creates it if it doesn't exist",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Gets an existing label by name or creates it if it doesn't exist"
+  }
+]
+Stream: False
+Tool choice: NOT_GIVEN
+Response format: NOT_GIVEN
+Previous response id: None
+
+2025-04-27 03:06:21,531 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/responses', 'headers': {'User-Agent': 'Agents/Python 0.0.13'}, 'files': None, 'idempotency_key': 'stainless-python-retry-8cec6b81-f3bf-41ff-8d70-e0f339053ef0', 'json_data': {'input': [{'content': '\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user\'s Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. "2025-04-25T14:30:00Z")\n   - **subject**: the email\'s subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment\'s file name\n     - **mime_type**: the attachment\'s MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  "emails": [\n    {\n      "email_id": "STRING",\n      "summary": "STRING",\n      "email_content": "STRING",\n      "sender": "STRING",\n      "recipients": ["STRING", ...],\n      "received_date": "STRING",\n      "subject": "STRING",\n      "attachments": [\n        {\n          "filename": "STRING",\n          "mime_type": "STRING"\n        },\n        …\n      ]\n    },\n    …\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n', 'role': 'user'}, {'arguments': '{"query":"in:inbox","maxResults":5}', 'call_id': 'call_2t3yQb0ynxLJ8X78K6zkjnIm', 'name': 'search_emails', 'type': 'function_call', 'id': 'fc_680d830cd7c08192ad65a7d03036a26d02437f572407c7d0', 'status': 'completed'}, {'call_id': 'call_2t3yQb0ynxLJ8X78K6zkjnIm', 'output': '{"type":"text","text":"Error: No access, refresh token, API key or refresh handler callback is set.","annotations":null}', 'type': 'function_call_output'}], 'model': 'gpt-4o', 'include': [], 'instructions': 'You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account.', 'stream': False, 'tools': [{'name': 'send_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Sends a new email'}, {'name': 'draft_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Draft a new email'}, {'name': 'read_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to retrieve'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves the content of a specific email'}, {'name': 'search_emails', 'parameters': {'type': 'object', 'properties': {'query': {'type': 'string', 'description': "Gmail search query (e.g., 'from:example@gmail.com')"}, 'maxResults': {'type': 'number', 'description': 'Maximum number of results to return'}}, 'required': ['query'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Searches for emails using Gmail search syntax'}, {'name': 'modify_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to modify'}, 'labelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to apply'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to the message'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from the message'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies email labels (move to different folders)'}, {'name': 'delete_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to delete'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes an email'}, {'name': 'list_email_labels', 'parameters': {'type': 'object', 'properties': {}, 'additionalProperties': False, 'description': 'Retrieves all available Gmail labels', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves all available Gmail labels'}, {'name': 'batch_modify_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to modify'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to all messages'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from all messages'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies labels for multiple emails in batches'}, {'name': 'batch_delete_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to delete'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes multiple emails in batches'}, {'name': 'create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name for the new label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': 'Creates a new Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Creates a new Gmail label'}, {'name': 'update_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to update'}, 'name': {'type': 'string', 'description': 'New name for the label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Updates an existing Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Updates an existing Gmail label'}, {'name': 'delete_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to delete'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Deletes a Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Deletes a Gmail label'}, {'name': 'get_or_create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name of the label to get or create'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': "Gets an existing label by name or creates it if it doesn't exist", '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': "Gets an existing label by name or creates it if it doesn't exist"}]}}
+2025-04-27 03:06:21,531 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/responses
+2025-04-27 03:06:21,532 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:21,532 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:06:21,532 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:06:21,532 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:06:21,532 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:24,746 - httpcore.connection - DEBUG - close.started
+2025-04-27 03:06:24,747 - httpcore.connection - DEBUG - close.complete
+2025-04-27 03:06:24,747 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:06:24,761 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10a35a6d0>
+2025-04-27 03:06:24,761 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x105d98440> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:06:24,776 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10a359f50>
+2025-04-27 03:06:24,776 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:24,776 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:06:24,776 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:06:24,776 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:06:24,776 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:25,481 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 204, b'No Content', [(b'Date', b'Sun, 27 Apr 2025 01:06:25 GMT'), (b'Connection', b'keep-alive'), (b'x-request-id', b'req_a6bc461cb799f1f8c4448d88aea69cc3'), (b'openai-processing-ms', b'142'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a6ac8f812d381-FRA'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:06:25,482 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
+2025-04-27 03:06:25,482 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 27 Apr 2025 01:06:25 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'x-request-id', b'req_c3c095f1f4fcfe51b9a5fc72322b5a56'), (b'openai-processing-ms', b'3684'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a6ab4bc1e4da6-FRA'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:06:25,482 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:06:25,482 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-04-27 03:06:25,482 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:06:25,482 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:06:25,482 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:06:25,482 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:06:25,483 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:06:25,483 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:06:25,483 - openai.agents - DEBUG - Exported 4 items
+2025-04-27 03:06:25,483 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:06:25,483 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/responses "200 OK" Headers({'date': 'Sun, 27 Apr 2025 01:06:25 GMT', 'content-type': 'application/json', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'openai-version': '2020-10-01', 'openai-organization': 'tumai-mfvuze', 'x-request-id': 'req_c3c095f1f4fcfe51b9a5fc72322b5a56', 'openai-processing-ms': '3684', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '936a6ab4bc1e4da6-FRA', 'content-encoding': 'gzip', 'alt-svc': 'h3=":443"; ma=86400'})
+2025-04-27 03:06:25,483 - openai._base_client - DEBUG - request_id: req_c3c095f1f4fcfe51b9a5fc72322b5a56
+2025-04-27 03:06:25,483 - openai.agents - DEBUG - LLM resp:
+[
+  {
+    "id": "msg_680d8310c6d48192815c07e79118609e02437f572407c7d0",
+    "content": [
+      {
+        "annotations": [],
+        "text": "It looks like there was an issue accessing your Gmail account due to missing credentials or permissions. Please ensure that all necessary access tokens and API keys are properly configured and try again.",
+        "type": "output_text"
+      }
+    ],
+    "role": "assistant",
+    "status": "completed",
+    "type": "message"
+  }
+]
+
+2025-04-27 03:06:25,484 - openai.agents - DEBUG - Resetting current trace
+2025-04-27 03:06:25,484 - gmail_auth - INFO - Emails fetched successfully
+2025-04-27 03:06:30,530 - httpcore.connection - DEBUG - close.started
+2025-04-27 03:06:30,532 - httpcore.connection - DEBUG - close.complete
+2025-04-27 03:06:30,533 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:06:30,550 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10a3a9a90>
+2025-04-27 03:06:30,550 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x105d98440> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:06:30,566 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10a3a9b50>
+2025-04-27 03:06:30,567 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:30,567 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:06:30,567 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:06:30,567 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:06:30,567 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:06:31,213 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 204, b'No Content', [(b'Date', b'Sun, 27 Apr 2025 01:06:31 GMT'), (b'Connection', b'keep-alive'), (b'x-request-id', b'req_6b5122a4b7235f047645849f735e5c92'), (b'openai-processing-ms', b'167'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a6aed2f86d24b-FRA'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:06:31,213 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
+2025-04-27 03:06:31,214 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:06:31,214 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:06:31,214 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:06:31,214 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:06:31,214 - openai.agents - DEBUG - Exported 2 items
+2025-04-27 03:08:52,237 - openai.agents - DEBUG - Shutting down trace provider
+2025-04-27 03:08:52,238 - openai.agents - DEBUG - Shutting down trace processor <agents.tracing.processors.BatchTraceProcessor object at 0x105d13150>
+2025-04-27 03:08:55,618 - gmail_auth - INFO - Starting application
+2025-04-27 03:08:55,618 - gmail_auth - DEBUG - Checking credentials at: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:08:55,618 - gmail_auth - DEBUG - Checking credentials at: /Users/rongjet.cheong/Desktop/Code/reply-gremlin/backend-python/gcp-oauth.keys.json
+2025-04-27 03:08:55,618 - gmail_auth - INFO - Using credentials from: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:09:09,146 - gmail_auth - INFO - Starting Gmail authentication process
+2025-04-27 03:09:09,146 - gmail_auth - INFO - Initializing Gmail MCP Server... This may take a moment for first-time authentication.
+2025-04-27 03:09:09,146 - gmail_auth - INFO - A browser window should open for Google authentication. Please log in and grant permissions.
+2025-04-27 03:09:09,147 - gmail_auth - DEBUG - Checking for credentials at: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:09:09,147 - gmail_auth - DEBUG - Checking for credentials at: /Users/rongjet.cheong/Desktop/Code/reply-gremlin/backend-python/gcp-oauth.keys.json
+2025-04-27 03:09:09,147 - gmail_auth - INFO - Using credentials from: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:09:10,777 - gmail_auth - INFO - Gmail MCP Server initialized successfully
+2025-04-27 03:09:10,777 - gmail_auth - INFO - Gmail authentication successful
+2025-04-27 03:09:10,777 - gmail_auth - DEBUG - Initializing Gmail Assistant agent
+2025-04-27 03:09:10,777 - gmail_auth - INFO - Fetching emails
+2025-04-27 03:09:10,777 - openai.agents - DEBUG - Creating trace Agent workflow with id trace_b64b3d7786924d59aa0a0d9b8b2440e0
+2025-04-27 03:09:10,778 - openai.agents - DEBUG - Setting current trace: trace_b64b3d7786924d59aa0a0d9b8b2440e0
+2025-04-27 03:09:10,779 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.AgentSpanData object at 0x10c8817f0> with id None
+2025-04-27 03:09:10,779 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.MCPListToolsSpanData object at 0x10c8ed400> with id None
+2025-04-27 03:09:10,784 - openai.agents - DEBUG - Running agent Gmail Assistant (turn 1)
+2025-04-27 03:09:10,806 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.ResponseSpanData object at 0x10c89bbb0> with id None
+2025-04-27 03:09:10,807 - openai.agents - DEBUG - Calling LLM gpt-4o with input:
+[
+  {
+    "content": "\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user's Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. \"2025-04-25T14:30:00Z\")\n   - **subject**: the email's subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment's file name\n     - **mime_type**: the attachment's MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  \"emails\": [\n    {\n      \"email_id\": \"STRING\",\n      \"summary\": \"STRING\",\n      \"email_content\": \"STRING\",\n      \"sender\": \"STRING\",\n      \"recipients\": [\"STRING\", ...],\n      \"received_date\": \"STRING\",\n      \"subject\": \"STRING\",\n      \"attachments\": [\n        {\n          \"filename\": \"STRING\",\n          \"mime_type\": \"STRING\"\n        },\n        \u2026\n      ]\n    },\n    \u2026\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n",
+    "role": "user"
+  }
+]
+Tools:
+[
+  {
+    "name": "send_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Sends a new email"
+  },
+  {
+    "name": "draft_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Draft a new email"
+  },
+  {
+    "name": "read_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to retrieve"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves the content of a specific email"
+  },
+  {
+    "name": "search_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Gmail search query (e.g., 'from:example@gmail.com')"
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Maximum number of results to return"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Searches for emails using Gmail search syntax"
+  },
+  {
+    "name": "modify_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to modify"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to apply"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to the message"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from the message"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies email labels (move to different folders)"
+  },
+  {
+    "name": "delete_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to delete"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes an email"
+  },
+  {
+    "name": "list_email_labels",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "description": "Retrieves all available Gmail labels",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves all available Gmail labels"
+  },
+  {
+    "name": "batch_modify_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to modify"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to all messages"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from all messages"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies labels for multiple emails in batches"
+  },
+  {
+    "name": "batch_delete_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to delete"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes multiple emails in batches"
+  },
+  {
+    "name": "create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name for the new label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Creates a new Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Creates a new Gmail label"
+  },
+  {
+    "name": "update_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "New name for the label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Updates an existing Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Updates an existing Gmail label"
+  },
+  {
+    "name": "delete_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to delete"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Deletes a Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Deletes a Gmail label"
+  },
+  {
+    "name": "get_or_create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the label to get or create"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Gets an existing label by name or creates it if it doesn't exist",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Gets an existing label by name or creates it if it doesn't exist"
+  }
+]
+Stream: False
+Tool choice: NOT_GIVEN
+Response format: NOT_GIVEN
+Previous response id: None
+
+2025-04-27 03:09:10,837 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/responses', 'headers': {'User-Agent': 'Agents/Python 0.0.13'}, 'files': None, 'idempotency_key': 'stainless-python-retry-fda35285-c312-4884-836e-cefa59ff7c4e', 'json_data': {'input': [{'content': '\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user\'s Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. "2025-04-25T14:30:00Z")\n   - **subject**: the email\'s subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment\'s file name\n     - **mime_type**: the attachment\'s MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  "emails": [\n    {\n      "email_id": "STRING",\n      "summary": "STRING",\n      "email_content": "STRING",\n      "sender": "STRING",\n      "recipients": ["STRING", ...],\n      "received_date": "STRING",\n      "subject": "STRING",\n      "attachments": [\n        {\n          "filename": "STRING",\n          "mime_type": "STRING"\n        },\n        …\n      ]\n    },\n    …\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n', 'role': 'user'}], 'model': 'gpt-4o', 'include': [], 'instructions': 'You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account.', 'stream': False, 'tools': [{'name': 'send_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Sends a new email'}, {'name': 'draft_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Draft a new email'}, {'name': 'read_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to retrieve'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves the content of a specific email'}, {'name': 'search_emails', 'parameters': {'type': 'object', 'properties': {'query': {'type': 'string', 'description': "Gmail search query (e.g., 'from:example@gmail.com')"}, 'maxResults': {'type': 'number', 'description': 'Maximum number of results to return'}}, 'required': ['query'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Searches for emails using Gmail search syntax'}, {'name': 'modify_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to modify'}, 'labelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to apply'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to the message'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from the message'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies email labels (move to different folders)'}, {'name': 'delete_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to delete'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes an email'}, {'name': 'list_email_labels', 'parameters': {'type': 'object', 'properties': {}, 'additionalProperties': False, 'description': 'Retrieves all available Gmail labels', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves all available Gmail labels'}, {'name': 'batch_modify_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to modify'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to all messages'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from all messages'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies labels for multiple emails in batches'}, {'name': 'batch_delete_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to delete'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes multiple emails in batches'}, {'name': 'create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name for the new label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': 'Creates a new Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Creates a new Gmail label'}, {'name': 'update_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to update'}, 'name': {'type': 'string', 'description': 'New name for the label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Updates an existing Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Updates an existing Gmail label'}, {'name': 'delete_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to delete'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Deletes a Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Deletes a Gmail label'}, {'name': 'get_or_create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name of the label to get or create'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': "Gets an existing label by name or creates it if it doesn't exist", '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': "Gets an existing label by name or creates it if it doesn't exist"}]}}
+2025-04-27 03:09:10,839 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/responses
+2025-04-27 03:09:10,839 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:09:10,865 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10c8f6210>
+2025-04-27 03:09:10,865 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1086afe30> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:09:10,881 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10c8a2410>
+2025-04-27 03:09:10,882 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:09:10,882 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:09:10,882 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:09:10,882 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:09:10,882 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:09:12,502 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 27 Apr 2025 01:09:12 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'x-request-id', b'req_818de38577d7341827e709fa273e60ef'), (b'openai-processing-ms', b'1334'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=f0jvRMmhBOaMqVcY6q89kBGLlxXzrXDB7dvmnMUeS7o-1745716152-1.0.1.1-s13JKxTcxxPfB_iiBYSUUGph5Fzr1QboQzrTHQo2vylNtEbLXPbK_kJqt7SW.yySyPG0wqrso.GbpOKHGwsI3FAndxZCFa8Ssi4fqDwPf1g; path=/; expires=Sun, 27-Apr-25 01:39:12 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=hC7hHwmn5pXuBjCqxfcNMT3C1F6v4rIdpAbnXD4ZsJ8-1745716152427-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a6ed72cb59042-FRA'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:09:12,507 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-04-27 03:09:12,509 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:09:12,570 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:09:12,570 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:09:12,570 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:09:12,570 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/responses "200 OK" Headers([('date', 'Sun, 27 Apr 2025 01:09:12 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('openai-version', '2020-10-01'), ('openai-organization', 'tumai-mfvuze'), ('x-request-id', 'req_818de38577d7341827e709fa273e60ef'), ('openai-processing-ms', '1334'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=f0jvRMmhBOaMqVcY6q89kBGLlxXzrXDB7dvmnMUeS7o-1745716152-1.0.1.1-s13JKxTcxxPfB_iiBYSUUGph5Fzr1QboQzrTHQo2vylNtEbLXPbK_kJqt7SW.yySyPG0wqrso.GbpOKHGwsI3FAndxZCFa8Ssi4fqDwPf1g; path=/; expires=Sun, 27-Apr-25 01:39:12 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=hC7hHwmn5pXuBjCqxfcNMT3C1F6v4rIdpAbnXD4ZsJ8-1745716152427-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '936a6ed72cb59042-FRA'), ('content-encoding', 'gzip'), ('alt-svc', 'h3=":443"; ma=86400')])
+2025-04-27 03:09:12,570 - openai._base_client - DEBUG - request_id: req_818de38577d7341827e709fa273e60ef
+2025-04-27 03:09:12,577 - openai.agents - DEBUG - LLM resp:
+[
+  {
+    "arguments": "{\"query\":\"in:inbox\",\"maxResults\":5}",
+    "call_id": "call_BfjwoSFIzZLJAunY9K8fIPwF",
+    "name": "search_emails",
+    "type": "function_call",
+    "id": "fc_680d83b7decc8192bbcf8076253b98e50308d2557d6bee0a",
+    "status": "completed"
+  }
+]
+
+2025-04-27 03:09:12,577 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.FunctionSpanData object at 0x10c9748f0> with id None
+2025-04-27 03:09:12,577 - openai.agents - DEBUG - Invoking MCP tool search_emails with input {"query":"in:inbox","maxResults":5}
+2025-04-27 03:09:12,580 - openai.agents - DEBUG - MCP tool search_emails returned meta=None content=[TextContent(type='text', text='Error: No access, refresh token, API key or refresh handler callback is set.', annotations=None)] isError=False
+2025-04-27 03:09:12,580 - openai.agents - DEBUG - Running agent Gmail Assistant (turn 2)
+2025-04-27 03:09:12,580 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.ResponseSpanData object at 0x10c979630> with id None
+2025-04-27 03:09:12,581 - openai.agents - DEBUG - Calling LLM gpt-4o with input:
+[
+  {
+    "content": "\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user's Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. \"2025-04-25T14:30:00Z\")\n   - **subject**: the email's subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment's file name\n     - **mime_type**: the attachment's MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  \"emails\": [\n    {\n      \"email_id\": \"STRING\",\n      \"summary\": \"STRING\",\n      \"email_content\": \"STRING\",\n      \"sender\": \"STRING\",\n      \"recipients\": [\"STRING\", ...],\n      \"received_date\": \"STRING\",\n      \"subject\": \"STRING\",\n      \"attachments\": [\n        {\n          \"filename\": \"STRING\",\n          \"mime_type\": \"STRING\"\n        },\n        \u2026\n      ]\n    },\n    \u2026\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n",
+    "role": "user"
+  },
+  {
+    "arguments": "{\"query\":\"in:inbox\",\"maxResults\":5}",
+    "call_id": "call_BfjwoSFIzZLJAunY9K8fIPwF",
+    "name": "search_emails",
+    "type": "function_call",
+    "id": "fc_680d83b7decc8192bbcf8076253b98e50308d2557d6bee0a",
+    "status": "completed"
+  },
+  {
+    "call_id": "call_BfjwoSFIzZLJAunY9K8fIPwF",
+    "output": "{\"type\":\"text\",\"text\":\"Error: No access, refresh token, API key or refresh handler callback is set.\",\"annotations\":null}",
+    "type": "function_call_output"
+  }
+]
+Tools:
+[
+  {
+    "name": "send_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Sends a new email"
+  },
+  {
+    "name": "draft_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Draft a new email"
+  },
+  {
+    "name": "read_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to retrieve"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves the content of a specific email"
+  },
+  {
+    "name": "search_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Gmail search query (e.g., 'from:example@gmail.com')"
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Maximum number of results to return"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Searches for emails using Gmail search syntax"
+  },
+  {
+    "name": "modify_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to modify"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to apply"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to the message"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from the message"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies email labels (move to different folders)"
+  },
+  {
+    "name": "delete_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to delete"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes an email"
+  },
+  {
+    "name": "list_email_labels",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "description": "Retrieves all available Gmail labels",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves all available Gmail labels"
+  },
+  {
+    "name": "batch_modify_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to modify"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to all messages"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from all messages"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies labels for multiple emails in batches"
+  },
+  {
+    "name": "batch_delete_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to delete"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes multiple emails in batches"
+  },
+  {
+    "name": "create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name for the new label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Creates a new Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Creates a new Gmail label"
+  },
+  {
+    "name": "update_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "New name for the label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Updates an existing Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Updates an existing Gmail label"
+  },
+  {
+    "name": "delete_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to delete"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Deletes a Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Deletes a Gmail label"
+  },
+  {
+    "name": "get_or_create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the label to get or create"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Gets an existing label by name or creates it if it doesn't exist",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Gets an existing label by name or creates it if it doesn't exist"
+  }
+]
+Stream: False
+Tool choice: NOT_GIVEN
+Response format: NOT_GIVEN
+Previous response id: None
+
+2025-04-27 03:09:12,582 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/responses', 'headers': {'User-Agent': 'Agents/Python 0.0.13'}, 'files': None, 'idempotency_key': 'stainless-python-retry-a2439cdf-3f1e-4570-93a0-6421449dc9ac', 'json_data': {'input': [{'content': '\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user\'s Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. "2025-04-25T14:30:00Z")\n   - **subject**: the email\'s subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment\'s file name\n     - **mime_type**: the attachment\'s MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  "emails": [\n    {\n      "email_id": "STRING",\n      "summary": "STRING",\n      "email_content": "STRING",\n      "sender": "STRING",\n      "recipients": ["STRING", ...],\n      "received_date": "STRING",\n      "subject": "STRING",\n      "attachments": [\n        {\n          "filename": "STRING",\n          "mime_type": "STRING"\n        },\n        …\n      ]\n    },\n    …\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n', 'role': 'user'}, {'arguments': '{"query":"in:inbox","maxResults":5}', 'call_id': 'call_BfjwoSFIzZLJAunY9K8fIPwF', 'name': 'search_emails', 'type': 'function_call', 'id': 'fc_680d83b7decc8192bbcf8076253b98e50308d2557d6bee0a', 'status': 'completed'}, {'call_id': 'call_BfjwoSFIzZLJAunY9K8fIPwF', 'output': '{"type":"text","text":"Error: No access, refresh token, API key or refresh handler callback is set.","annotations":null}', 'type': 'function_call_output'}], 'model': 'gpt-4o', 'include': [], 'instructions': 'You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account.', 'stream': False, 'tools': [{'name': 'send_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Sends a new email'}, {'name': 'draft_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Draft a new email'}, {'name': 'read_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to retrieve'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves the content of a specific email'}, {'name': 'search_emails', 'parameters': {'type': 'object', 'properties': {'query': {'type': 'string', 'description': "Gmail search query (e.g., 'from:example@gmail.com')"}, 'maxResults': {'type': 'number', 'description': 'Maximum number of results to return'}}, 'required': ['query'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Searches for emails using Gmail search syntax'}, {'name': 'modify_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to modify'}, 'labelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to apply'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to the message'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from the message'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies email labels (move to different folders)'}, {'name': 'delete_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to delete'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes an email'}, {'name': 'list_email_labels', 'parameters': {'type': 'object', 'properties': {}, 'additionalProperties': False, 'description': 'Retrieves all available Gmail labels', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves all available Gmail labels'}, {'name': 'batch_modify_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to modify'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to all messages'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from all messages'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies labels for multiple emails in batches'}, {'name': 'batch_delete_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to delete'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes multiple emails in batches'}, {'name': 'create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name for the new label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': 'Creates a new Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Creates a new Gmail label'}, {'name': 'update_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to update'}, 'name': {'type': 'string', 'description': 'New name for the label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Updates an existing Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Updates an existing Gmail label'}, {'name': 'delete_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to delete'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Deletes a Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Deletes a Gmail label'}, {'name': 'get_or_create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name of the label to get or create'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': "Gets an existing label by name or creates it if it doesn't exist", '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': "Gets an existing label by name or creates it if it doesn't exist"}]}}
+2025-04-27 03:09:12,584 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/responses
+2025-04-27 03:09:12,584 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:09:12,584 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:09:12,584 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:09:12,584 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:09:12,584 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:09:14,445 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 27 Apr 2025 01:09:14 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'x-request-id', b'req_d12034feb6f94ba54293e1c29d9da5ad'), (b'openai-processing-ms', b'1569'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a6ee1c88f9042-FRA'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:09:14,445 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-04-27 03:09:14,445 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:09:14,532 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:09:14,532 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:09:14,532 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:09:14,533 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/responses "200 OK" Headers({'date': 'Sun, 27 Apr 2025 01:09:14 GMT', 'content-type': 'application/json', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'openai-version': '2020-10-01', 'openai-organization': 'tumai-mfvuze', 'x-request-id': 'req_d12034feb6f94ba54293e1c29d9da5ad', 'openai-processing-ms': '1569', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '936a6ee1c88f9042-FRA', 'content-encoding': 'gzip', 'alt-svc': 'h3=":443"; ma=86400'})
+2025-04-27 03:09:14,533 - openai._base_client - DEBUG - request_id: req_d12034feb6f94ba54293e1c29d9da5ad
+2025-04-27 03:09:14,534 - openai.agents - DEBUG - LLM resp:
+[
+  {
+    "id": "msg_680d83b985fc81929fb618d3e4a1283c0308d2557d6bee0a",
+    "content": [
+      {
+        "annotations": [],
+        "text": "It seems there's an issue accessing the Gmail API. I'll need to have the proper access configuration to proceed. Please make sure the necessary permissions and keys are set up correctly, and try again.",
+        "type": "output_text"
+      }
+    ],
+    "role": "assistant",
+    "status": "completed",
+    "type": "message"
+  }
+]
+
+2025-04-27 03:09:14,534 - openai.agents - DEBUG - Resetting current trace
+2025-04-27 03:09:14,534 - gmail_auth - INFO - Emails fetched successfully
+2025-04-27 03:09:15,742 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:09:15,761 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x108277a10>
+2025-04-27 03:09:15,761 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1082fc440> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:09:15,778 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10c918e10>
+2025-04-27 03:09:15,778 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:09:15,778 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:09:15,778 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:09:15,778 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:09:15,778 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:09:16,389 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 204, b'No Content', [(b'Date', b'Sun, 27 Apr 2025 01:09:16 GMT'), (b'Connection', b'keep-alive'), (b'x-request-id', b'req_17fa4a056647d566dfde309f5dfea91b'), (b'openai-processing-ms', b'157'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=UePVpLbR4RffRgf7XGDt4AD6r33vH1a2KES3sQPXpu0-1745716156-1.0.1.1-2EZmNW_ukrwSqX3kUhCqF7XLlQFMBLYbbun1ZjD7QdKWfJd2Psv0ToFlnxRY2.WkYjj_QZf4FJPYpG8sviy4L5JqKcKq178eVRL9Bbfv9ow; path=/; expires=Sun, 27-Apr-25 01:39:16 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=XxP0rwibikZIylg2tQaBjTFsn4EMn4pcSMDMd0eJmvY-1745716156371-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a6ef5bdfd8ffa-FRA'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:09:16,390 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
+2025-04-27 03:09:16,390 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:09:16,390 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:09:16,390 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:09:16,390 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:09:16,390 - openai.agents - DEBUG - Exported 6 items
+2025-04-27 03:14:08,870 - gmail_auth - INFO - Starting Gmail authentication process
+2025-04-27 03:14:08,873 - gmail_auth - INFO - Initializing Gmail MCP Server... This may take a moment for first-time authentication.
+2025-04-27 03:14:08,873 - gmail_auth - INFO - A browser window should open for Google authentication. Please log in and grant permissions.
+2025-04-27 03:14:08,873 - gmail_auth - DEBUG - Checking for credentials at: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:14:08,873 - gmail_auth - DEBUG - Checking for credentials at: /Users/rongjet.cheong/Desktop/Code/reply-gremlin/backend-python/gcp-oauth.keys.json
+2025-04-27 03:14:08,873 - gmail_auth - INFO - Using credentials from: /Users/rongjet.cheong/.gmail-mcp/gcp-oauth.keys.json
+2025-04-27 03:14:12,238 - gmail_auth - INFO - Gmail MCP Server initialized successfully
+2025-04-27 03:14:12,238 - gmail_auth - INFO - Gmail authentication successful
+2025-04-27 03:14:12,238 - gmail_auth - DEBUG - Initializing Gmail Assistant agent
+2025-04-27 03:14:12,238 - gmail_auth - INFO - Fetching emails
+2025-04-27 03:14:12,239 - openai.agents - DEBUG - Creating trace Agent workflow with id trace_76e68a4e8c334d0f8263656aa155a9d8
+2025-04-27 03:14:12,239 - openai.agents - DEBUG - Setting current trace: trace_76e68a4e8c334d0f8263656aa155a9d8
+2025-04-27 03:14:12,240 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.AgentSpanData object at 0x10c8ce870> with id None
+2025-04-27 03:14:12,240 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.MCPListToolsSpanData object at 0x10c978a50> with id None
+2025-04-27 03:14:12,243 - openai.agents - DEBUG - Running agent Gmail Assistant (turn 1)
+2025-04-27 03:14:12,257 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.ResponseSpanData object at 0x10c8cbe30> with id None
+2025-04-27 03:14:12,258 - openai.agents - DEBUG - Calling LLM gpt-4o with input:
+[
+  {
+    "content": "\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user's Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. \"2025-04-25T14:30:00Z\")\n   - **subject**: the email's subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment's file name\n     - **mime_type**: the attachment's MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  \"emails\": [\n    {\n      \"email_id\": \"STRING\",\n      \"summary\": \"STRING\",\n      \"email_content\": \"STRING\",\n      \"sender\": \"STRING\",\n      \"recipients\": [\"STRING\", ...],\n      \"received_date\": \"STRING\",\n      \"subject\": \"STRING\",\n      \"attachments\": [\n        {\n          \"filename\": \"STRING\",\n          \"mime_type\": \"STRING\"\n        },\n        \u2026\n      ]\n    },\n    \u2026\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n",
+    "role": "user"
+  }
+]
+Tools:
+[
+  {
+    "name": "send_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Sends a new email"
+  },
+  {
+    "name": "draft_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Draft a new email"
+  },
+  {
+    "name": "read_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to retrieve"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves the content of a specific email"
+  },
+  {
+    "name": "search_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Gmail search query (e.g., 'from:example@gmail.com')"
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Maximum number of results to return"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Searches for emails using Gmail search syntax"
+  },
+  {
+    "name": "modify_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to modify"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to apply"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to the message"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from the message"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies email labels (move to different folders)"
+  },
+  {
+    "name": "delete_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to delete"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes an email"
+  },
+  {
+    "name": "list_email_labels",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "description": "Retrieves all available Gmail labels",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves all available Gmail labels"
+  },
+  {
+    "name": "batch_modify_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to modify"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to all messages"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from all messages"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies labels for multiple emails in batches"
+  },
+  {
+    "name": "batch_delete_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to delete"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes multiple emails in batches"
+  },
+  {
+    "name": "create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name for the new label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Creates a new Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Creates a new Gmail label"
+  },
+  {
+    "name": "update_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "New name for the label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Updates an existing Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Updates an existing Gmail label"
+  },
+  {
+    "name": "delete_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to delete"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Deletes a Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Deletes a Gmail label"
+  },
+  {
+    "name": "get_or_create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the label to get or create"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Gets an existing label by name or creates it if it doesn't exist",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Gets an existing label by name or creates it if it doesn't exist"
+  }
+]
+Stream: False
+Tool choice: NOT_GIVEN
+Response format: NOT_GIVEN
+Previous response id: None
+
+2025-04-27 03:14:12,260 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/responses', 'headers': {'User-Agent': 'Agents/Python 0.0.13'}, 'files': None, 'idempotency_key': 'stainless-python-retry-8240f6b2-cb3f-4ac9-8314-93ff27366f6b', 'json_data': {'input': [{'content': '\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user\'s Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. "2025-04-25T14:30:00Z")\n   - **subject**: the email\'s subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment\'s file name\n     - **mime_type**: the attachment\'s MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  "emails": [\n    {\n      "email_id": "STRING",\n      "summary": "STRING",\n      "email_content": "STRING",\n      "sender": "STRING",\n      "recipients": ["STRING", ...],\n      "received_date": "STRING",\n      "subject": "STRING",\n      "attachments": [\n        {\n          "filename": "STRING",\n          "mime_type": "STRING"\n        },\n        …\n      ]\n    },\n    …\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n', 'role': 'user'}], 'model': 'gpt-4o', 'include': [], 'instructions': 'You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account.', 'stream': False, 'tools': [{'name': 'send_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Sends a new email'}, {'name': 'draft_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Draft a new email'}, {'name': 'read_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to retrieve'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves the content of a specific email'}, {'name': 'search_emails', 'parameters': {'type': 'object', 'properties': {'query': {'type': 'string', 'description': "Gmail search query (e.g., 'from:example@gmail.com')"}, 'maxResults': {'type': 'number', 'description': 'Maximum number of results to return'}}, 'required': ['query'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Searches for emails using Gmail search syntax'}, {'name': 'modify_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to modify'}, 'labelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to apply'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to the message'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from the message'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies email labels (move to different folders)'}, {'name': 'delete_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to delete'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes an email'}, {'name': 'list_email_labels', 'parameters': {'type': 'object', 'properties': {}, 'additionalProperties': False, 'description': 'Retrieves all available Gmail labels', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves all available Gmail labels'}, {'name': 'batch_modify_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to modify'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to all messages'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from all messages'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies labels for multiple emails in batches'}, {'name': 'batch_delete_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to delete'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes multiple emails in batches'}, {'name': 'create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name for the new label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': 'Creates a new Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Creates a new Gmail label'}, {'name': 'update_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to update'}, 'name': {'type': 'string', 'description': 'New name for the label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Updates an existing Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Updates an existing Gmail label'}, {'name': 'delete_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to delete'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Deletes a Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Deletes a Gmail label'}, {'name': 'get_or_create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name of the label to get or create'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': "Gets an existing label by name or creates it if it doesn't exist", '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': "Gets an existing label by name or creates it if it doesn't exist"}]}}
+2025-04-27 03:14:12,262 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/responses
+2025-04-27 03:14:12,262 - httpcore.connection - DEBUG - close.started
+2025-04-27 03:14:12,262 - httpcore.connection - DEBUG - close.complete
+2025-04-27 03:14:12,262 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:14:12,293 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10c8f5f90>
+2025-04-27 03:14:12,296 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1086afe30> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:14:12,327 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10c8f5f10>
+2025-04-27 03:14:12,328 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:12,328 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:14:12,328 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:14:12,328 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:14:12,328 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:14,307 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 27 Apr 2025 01:14:14 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'x-request-id', b'req_620f679323959ee36eaa89a40ba82d44'), (b'openai-processing-ms', b'1730'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a76332d4bc4d8-FRA'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:14:14,309 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-04-27 03:14:14,309 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:14:14,421 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:14:14,421 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:14:14,421 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:14:14,421 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/responses "200 OK" Headers({'date': 'Sun, 27 Apr 2025 01:14:14 GMT', 'content-type': 'application/json', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'openai-version': '2020-10-01', 'openai-organization': 'tumai-mfvuze', 'x-request-id': 'req_620f679323959ee36eaa89a40ba82d44', 'openai-processing-ms': '1730', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '936a76332d4bc4d8-FRA', 'content-encoding': 'gzip', 'alt-svc': 'h3=":443"; ma=86400'})
+2025-04-27 03:14:14,421 - openai._base_client - DEBUG - request_id: req_620f679323959ee36eaa89a40ba82d44
+2025-04-27 03:14:14,422 - openai.agents - DEBUG - LLM resp:
+[
+  {
+    "arguments": "{\"query\":\"in:inbox\",\"maxResults\":5}",
+    "call_id": "call_W46GoYFaHgB1L7rUfYwdggFn",
+    "name": "search_emails",
+    "type": "function_call",
+    "id": "fc_680d84e55ee481929c7cced6eded94f4058a14b5bc21cb71",
+    "status": "completed"
+  }
+]
+
+2025-04-27 03:14:14,423 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.FunctionSpanData object at 0x10c974d70> with id None
+2025-04-27 03:14:14,423 - openai.agents - DEBUG - Invoking MCP tool search_emails with input {"query":"in:inbox","maxResults":5}
+2025-04-27 03:14:14,454 - openai.agents - DEBUG - MCP tool search_emails returned meta=None content=[TextContent(type='text', text='Error: No access, refresh token, API key or refresh handler callback is set.', annotations=None)] isError=False
+2025-04-27 03:14:14,455 - openai.agents - DEBUG - Running agent Gmail Assistant (turn 2)
+2025-04-27 03:14:14,455 - openai.agents - DEBUG - Creating span <agents.tracing.span_data.ResponseSpanData object at 0x10c9112c0> with id None
+2025-04-27 03:14:14,455 - openai.agents - DEBUG - Calling LLM gpt-4o with input:
+[
+  {
+    "content": "\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user's Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. \"2025-04-25T14:30:00Z\")\n   - **subject**: the email's subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment's file name\n     - **mime_type**: the attachment's MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  \"emails\": [\n    {\n      \"email_id\": \"STRING\",\n      \"summary\": \"STRING\",\n      \"email_content\": \"STRING\",\n      \"sender\": \"STRING\",\n      \"recipients\": [\"STRING\", ...],\n      \"received_date\": \"STRING\",\n      \"subject\": \"STRING\",\n      \"attachments\": [\n        {\n          \"filename\": \"STRING\",\n          \"mime_type\": \"STRING\"\n        },\n        \u2026\n      ]\n    },\n    \u2026\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n",
+    "role": "user"
+  },
+  {
+    "arguments": "{\"query\":\"in:inbox\",\"maxResults\":5}",
+    "call_id": "call_W46GoYFaHgB1L7rUfYwdggFn",
+    "name": "search_emails",
+    "type": "function_call",
+    "id": "fc_680d84e55ee481929c7cced6eded94f4058a14b5bc21cb71",
+    "status": "completed"
+  },
+  {
+    "call_id": "call_W46GoYFaHgB1L7rUfYwdggFn",
+    "output": "{\"type\":\"text\",\"text\":\"Error: No access, refresh token, API key or refresh handler callback is set.\",\"annotations\":null}",
+    "type": "function_call_output"
+  }
+]
+Tools:
+[
+  {
+    "name": "send_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Sends a new email"
+  },
+  {
+    "name": "draft_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of recipient email addresses"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Email subject"
+        },
+        "body": {
+          "type": "string",
+          "description": "Email body content"
+        },
+        "cc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of CC recipients"
+        },
+        "bcc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of BCC recipients"
+        },
+        "threadId": {
+          "type": "string",
+          "description": "Thread ID to reply to"
+        },
+        "inReplyTo": {
+          "type": "string",
+          "description": "Message ID being replied to"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Draft a new email"
+  },
+  {
+    "name": "read_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to retrieve"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves the content of a specific email"
+  },
+  {
+    "name": "search_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Gmail search query (e.g., 'from:example@gmail.com')"
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Maximum number of results to return"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Searches for emails using Gmail search syntax"
+  },
+  {
+    "name": "modify_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to modify"
+        },
+        "labelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to apply"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to the message"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from the message"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies email labels (move to different folders)"
+  },
+  {
+    "name": "delete_email",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "description": "ID of the email message to delete"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes an email"
+  },
+  {
+    "name": "list_email_labels",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "description": "Retrieves all available Gmail labels",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Retrieves all available Gmail labels"
+  },
+  {
+    "name": "batch_modify_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to modify"
+        },
+        "addLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to add to all messages"
+        },
+        "removeLabelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of label IDs to remove from all messages"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Modifies labels for multiple emails in batches"
+  },
+  {
+    "name": "batch_delete_emails",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of message IDs to delete"
+        },
+        "batchSize": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of messages to process in each batch (default: 50)"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Permanently deletes multiple emails in batches"
+  },
+  {
+    "name": "create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name for the new label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Creates a new Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Creates a new Gmail label"
+  },
+  {
+    "name": "update_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "New name for the label"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Updates an existing Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Updates an existing Gmail label"
+  },
+  {
+    "name": "delete_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the label to delete"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Deletes a Gmail label",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Deletes a Gmail label"
+  },
+  {
+    "name": "get_or_create_label",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the label to get or create"
+        },
+        "messageListVisibility": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "description": "Whether to show or hide the label in the message list"
+        },
+        "labelListVisibility": {
+          "type": "string",
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "description": "Visibility of the label in the label list"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "Gets an existing label by name or creates it if it doesn't exist",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "strict": false,
+    "type": "function",
+    "description": "Gets an existing label by name or creates it if it doesn't exist"
+  }
+]
+Stream: False
+Tool choice: NOT_GIVEN
+Response format: NOT_GIVEN
+Previous response id: None
+
+2025-04-27 03:14:14,456 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/responses', 'headers': {'User-Agent': 'Agents/Python 0.0.13'}, 'files': None, 'idempotency_key': 'stainless-python-retry-1976389f-77f3-4eeb-adbb-c7d991c47701', 'json_data': {'input': [{'content': '\nYou are a Gmail Email Agent that is triggered once when the application loads. Your task is to:\n\n1. Fetch the **last 5 emails** from the user\'s Gmail inbox.\n2. For each email, extract the following fields:\n   - **email_id**: the unique Gmail message ID\n   - **summary**: a brief summary of the email body, written in English (also consider the attachments if they seem relevant)\n   - **email_content**: the full plain-text body of the email\n   - **sender**: the email address of the sender\n   - **recipients**: a list of all recipient email addresses (To, Cc, Bcc)\n   - **received_date**: the timestamp when the email was received, in ISO-8601 format (e.g. "2025-04-25T14:30:00Z")\n   - **subject**: the email\'s subject line\n   - **attachments**: a list of attachment metadata objects, each containing:\n     - **filename**: the attachment\'s file name\n     - **mime_type**: the attachment\'s MIME type  \n     (Do not download or open attachments; only list their filenames and types.)\n\n3. Return the result strictly as valid JSON, with no comments or extra fields, in the following structure:\n\n{\n  "emails": [\n    {\n      "email_id": "STRING",\n      "summary": "STRING",\n      "email_content": "STRING",\n      "sender": "STRING",\n      "recipients": ["STRING", ...],\n      "received_date": "STRING",\n      "subject": "STRING",\n      "attachments": [\n        {\n          "filename": "STRING",\n          "mime_type": "STRING"\n        },\n        …\n      ]\n    },\n    …\n  ]\n}\n\nImportant:\n- Only retrieve the last 5 messages in descending order by received date.\n- Ensure the JSON is well-formed and parsable.\n', 'role': 'user'}, {'arguments': '{"query":"in:inbox","maxResults":5}', 'call_id': 'call_W46GoYFaHgB1L7rUfYwdggFn', 'name': 'search_emails', 'type': 'function_call', 'id': 'fc_680d84e55ee481929c7cced6eded94f4058a14b5bc21cb71', 'status': 'completed'}, {'call_id': 'call_W46GoYFaHgB1L7rUfYwdggFn', 'output': '{"type":"text","text":"Error: No access, refresh token, API key or refresh handler callback is set.","annotations":null}', 'type': 'function_call_output'}], 'model': 'gpt-4o', 'include': [], 'instructions': 'You are a helpful assistant that interacts with Gmail. Use the provided tools to help the user manage their Gmail account.', 'stream': False, 'tools': [{'name': 'send_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Sends a new email'}, {'name': 'draft_email', 'parameters': {'type': 'object', 'properties': {'to': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of recipient email addresses'}, 'subject': {'type': 'string', 'description': 'Email subject'}, 'body': {'type': 'string', 'description': 'Email body content'}, 'cc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of CC recipients'}, 'bcc': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of BCC recipients'}, 'threadId': {'type': 'string', 'description': 'Thread ID to reply to'}, 'inReplyTo': {'type': 'string', 'description': 'Message ID being replied to'}}, 'required': ['to', 'subject', 'body'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Draft a new email'}, {'name': 'read_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to retrieve'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves the content of a specific email'}, {'name': 'search_emails', 'parameters': {'type': 'object', 'properties': {'query': {'type': 'string', 'description': "Gmail search query (e.g., 'from:example@gmail.com')"}, 'maxResults': {'type': 'number', 'description': 'Maximum number of results to return'}}, 'required': ['query'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Searches for emails using Gmail search syntax'}, {'name': 'modify_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to modify'}, 'labelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to apply'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to the message'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from the message'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies email labels (move to different folders)'}, {'name': 'delete_email', 'parameters': {'type': 'object', 'properties': {'messageId': {'type': 'string', 'description': 'ID of the email message to delete'}}, 'required': ['messageId'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes an email'}, {'name': 'list_email_labels', 'parameters': {'type': 'object', 'properties': {}, 'additionalProperties': False, 'description': 'Retrieves all available Gmail labels', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Retrieves all available Gmail labels'}, {'name': 'batch_modify_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to modify'}, 'addLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to add to all messages'}, 'removeLabelIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of label IDs to remove from all messages'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Modifies labels for multiple emails in batches'}, {'name': 'batch_delete_emails', 'parameters': {'type': 'object', 'properties': {'messageIds': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of message IDs to delete'}, 'batchSize': {'type': 'number', 'default': 50, 'description': 'Number of messages to process in each batch (default: 50)'}}, 'required': ['messageIds'], 'additionalProperties': False, '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Permanently deletes multiple emails in batches'}, {'name': 'create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name for the new label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': 'Creates a new Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Creates a new Gmail label'}, {'name': 'update_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to update'}, 'name': {'type': 'string', 'description': 'New name for the label'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Updates an existing Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Updates an existing Gmail label'}, {'name': 'delete_label', 'parameters': {'type': 'object', 'properties': {'id': {'type': 'string', 'description': 'ID of the label to delete'}}, 'required': ['id'], 'additionalProperties': False, 'description': 'Deletes a Gmail label', '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': 'Deletes a Gmail label'}, {'name': 'get_or_create_label', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Name of the label to get or create'}, 'messageListVisibility': {'type': 'string', 'enum': ['show', 'hide'], 'description': 'Whether to show or hide the label in the message list'}, 'labelListVisibility': {'type': 'string', 'enum': ['labelShow', 'labelShowIfUnread', 'labelHide'], 'description': 'Visibility of the label in the label list'}}, 'required': ['name'], 'additionalProperties': False, 'description': "Gets an existing label by name or creates it if it doesn't exist", '$schema': 'http://json-schema.org/draft-07/schema#'}, 'strict': False, 'type': 'function', 'description': "Gets an existing label by name or creates it if it doesn't exist"}]}}
+2025-04-27 03:14:14,457 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/responses
+2025-04-27 03:14:14,457 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:14,457 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:14:14,457 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:14:14,458 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:14:14,458 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:14,962 - httpcore.connection - DEBUG - close.started
+2025-04-27 03:14:14,964 - httpcore.connection - DEBUG - close.complete
+2025-04-27 03:14:14,964 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:14:14,979 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10c91dd90>
+2025-04-27 03:14:14,979 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1082fc440> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:14:14,997 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10c91de50>
+2025-04-27 03:14:14,997 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:14,997 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:14:14,997 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:14:14,998 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:14:14,998 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:15,711 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 204, b'No Content', [(b'Date', b'Sun, 27 Apr 2025 01:14:15 GMT'), (b'Connection', b'keep-alive'), (b'x-request-id', b'req_b651e102245a4e7c5f7d7e8263e727a8'), (b'openai-processing-ms', b'213'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a7643df5030d2-FRA'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:14:15,711 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
+2025-04-27 03:14:15,711 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:14:15,711 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:14:15,711 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:14:15,711 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:14:15,711 - openai.agents - DEBUG - Exported 4 items
+2025-04-27 03:14:16,247 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 27 Apr 2025 01:14:16 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'x-request-id', b'req_25464b00ab18c11dd53bdaa56a95782f'), (b'openai-processing-ms', b'1590'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a76407a03c4d8-FRA'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:14:16,248 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-04-27 03:14:16,248 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:14:16,289 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:14:16,289 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:14:16,290 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:14:16,290 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/responses "200 OK" Headers({'date': 'Sun, 27 Apr 2025 01:14:16 GMT', 'content-type': 'application/json', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'openai-version': '2020-10-01', 'openai-organization': 'tumai-mfvuze', 'x-request-id': 'req_25464b00ab18c11dd53bdaa56a95782f', 'openai-processing-ms': '1590', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '936a76407a03c4d8-FRA', 'content-encoding': 'gzip', 'alt-svc': 'h3=":443"; ma=86400'})
+2025-04-27 03:14:16,290 - openai._base_client - DEBUG - request_id: req_25464b00ab18c11dd53bdaa56a95782f
+2025-04-27 03:14:16,290 - openai.agents - DEBUG - LLM resp:
+[
+  {
+    "id": "msg_680d84e7613c819280f54353ad4535c4058a14b5bc21cb71",
+    "content": [
+      {
+        "annotations": [],
+        "text": "It seems there is an issue with accessing the Gmail service at the moment. Please ensure that the necessary permissions and API configurations are correctly set up to enable the email retrieval functionality. Once access is granted, I can proceed with fetching and processing your emails.",
+        "type": "output_text"
+      }
+    ],
+    "role": "assistant",
+    "status": "completed",
+    "type": "message"
+  }
+]
+
+2025-04-27 03:14:16,291 - openai.agents - DEBUG - Resetting current trace
+2025-04-27 03:14:16,291 - gmail_auth - INFO - Emails fetched successfully
+2025-04-27 03:14:20,813 - httpcore.connection - DEBUG - close.started
+2025-04-27 03:14:20,816 - httpcore.connection - DEBUG - close.complete
+2025-04-27 03:14:20,816 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-04-27 03:14:20,833 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10c91f850>
+2025-04-27 03:14:20,833 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1082fc440> server_hostname='api.openai.com' timeout=5.0
+2025-04-27 03:14:20,851 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10c91eb90>
+2025-04-27 03:14:20,851 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:20,851 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-04-27 03:14:20,851 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-27 03:14:20,852 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-04-27 03:14:20,852 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-27 03:14:21,649 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 204, b'No Content', [(b'Date', b'Sun, 27 Apr 2025 01:14:21 GMT'), (b'Connection', b'keep-alive'), (b'x-request-id', b'req_3b392845de08037abf21f8b4cb3f243a'), (b'openai-processing-ms', b'258'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'tumai-mfvuze'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'936a76687dffdbd3-FRA'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-04-27 03:14:21,649 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
+2025-04-27 03:14:21,650 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-27 03:14:21,650 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-04-27 03:14:21,650 - httpcore.http11 - DEBUG - response_closed.started
+2025-04-27 03:14:21,650 - httpcore.http11 - DEBUG - response_closed.complete
+2025-04-27 03:14:21,650 - openai.agents - DEBUG - Exported 2 items
+2025-04-27 03:21:25,108 - openai.agents - DEBUG - Shutting down trace provider
+2025-04-27 03:21:25,111 - openai.agents - DEBUG - Shutting down trace processor <agents.tracing.processors.BatchTraceProcessor object at 0x1082771d0>

@@ -33,7 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-gmail_mcp/gcp-oauth.keys.json
+gcp-oauth.keys.json*
 
 # vercel
 .vercel

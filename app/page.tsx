@@ -397,7 +397,10 @@ export default function Home() {
               case 'closed':
                 console.error("ICE connection closed");
                 setConnectionStatus("closed");
-                stopSession();
+                // Only call stopSession if this is the current peer connection
+                if (peerConnectionRef.current === pc) {
+                  stopSession();
+                }
                 break;
             }
           };
@@ -405,7 +408,7 @@ export default function Home() {
           pc.onconnectionstatechange = () => {
             console.log("Connection state:", pc.connectionState);
             
-            if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+            if ((pc.connectionState === 'failed' || pc.connectionState === 'closed') && peerConnectionRef.current === pc) {
               console.error("Connection failed or closed:", pc.connectionState);
               setConnectionStatus(pc.connectionState);
               
@@ -524,6 +527,12 @@ export default function Home() {
             sdp: answerSdp,
           };
           
+          // Check if connection is still open before setting remote description
+          if (pc.signalingState === "closed") {
+            console.error("Cannot set remote description, peer connection is closed");
+            throw new Error("Peer connection is closed, cannot set remote description");
+          }
+          
           await pc.setRemoteDescription(answer);
           console.log("Set remote description with answer");
           
@@ -613,8 +622,10 @@ export default function Home() {
           }
         });
         
-        // Close the peer connection
-        peerConnectionRef.current.close();
+        // Only close if not already closed
+        if (peerConnectionRef.current.signalingState !== "closed") {
+          peerConnectionRef.current.close();
+        }
       } catch (e) {
         console.error("Error closing PeerConnection:", e);
       } finally {
